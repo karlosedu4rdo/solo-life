@@ -19,8 +19,7 @@
     "type-check": "tsc --noEmit",
     "preview": "next build && next start",
     "analyze": "ANALYZE=true next build",
-    "clean": "rm -rf .next out node_modules/.cache",
-    "postbuild": "next-sitemap"
+    "clean": "rm -rf .next out node_modules/.cache"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

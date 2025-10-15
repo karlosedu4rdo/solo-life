@@ -11,7 +11,6 @@ const nextConfig = {
     domains: ['localhost'],
   },
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   compiler: {

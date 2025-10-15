@@ -11,8 +11,6 @@ export const metadata: Metadata = {
   description: "Transforme sua vida em uma jornada épica de crescimento pessoal",
   generator: "v0.app",
   manifest: "/manifest.json",
-  themeColor: "#3b82f6",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -32,6 +30,16 @@ export const metadata: Metadata = {
     title: "Solo Life - Sistema de Gerenciamento Pessoal",
     description: "Transforme sua vida em uma jornada épica de crescimento pessoal",
   },
+}
+
+export function generateViewport() {
+  return {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    themeColor: "#3b82f6",
+  }
 }
 
 export default function RootLayout({
