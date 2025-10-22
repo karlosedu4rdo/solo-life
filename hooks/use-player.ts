@@ -18,29 +18,37 @@ export function usePlayer() {
       return
     }
     
-    try {
-      const savedPlayer = loadPlayer()
-      if (savedPlayer) {
-        setPlayer(savedPlayer)
+    const loadPlayerData = async () => {
+      try {
+        const savedPlayer = await loadPlayer()
+        if (savedPlayer) {
+          setPlayer(savedPlayer)
+        }
+        setError(null)
+      } catch (err) {
+        console.error("[usePlayer] Error loading player:", err)
+        setError("Failed to load player data")
+      } finally {
+        setIsLoading(false)
       }
-      setError(null)
-    } catch (err) {
-      console.error("[usePlayer] Error loading player:", err)
-      setError("Failed to load player data")
-    } finally {
-      setIsLoading(false)
     }
+    
+    loadPlayerData()
   }, [])
 
   useEffect(() => {
     if (player) {
-      try {
-        savePlayer(player)
-        setError(null)
-      } catch (err) {
-        console.error("[usePlayer] Error saving player:", err)
-        setError("Failed to save player data")
+      const savePlayerData = async () => {
+        try {
+          await savePlayer(player)
+          setError(null)
+        } catch (err) {
+          console.error("[usePlayer] Error saving player:", err)
+          setError("Failed to save player data")
+        }
       }
+      
+      savePlayerData()
     }
   }, [player])
 

@@ -12,55 +12,71 @@ export function useFinance() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    try {
-      const savedTransactions = loadTransactions()
-      const savedGoals = loadFinancialGoals()
-      const savedInvestments = loadInvestments()
-      setTransactions(savedTransactions)
-      setGoals(savedGoals)
-      setInvestments(savedInvestments)
-      setError(null)
-    } catch (err) {
-      console.error("[useFinance] Error loading data:", err)
-      setError("Failed to load financial data")
-    } finally {
-      setIsLoading(false)
+    const loadFinanceData = async () => {
+      try {
+        const savedTransactions = await loadTransactions()
+        const savedGoals = await loadFinancialGoals()
+        const savedInvestments = await loadInvestments()
+        setTransactions(savedTransactions)
+        setGoals(savedGoals)
+        setInvestments(savedInvestments)
+        setError(null)
+      } catch (err) {
+        console.error("[useFinance] Error loading data:", err)
+        setError("Failed to load financial data")
+      } finally {
+        setIsLoading(false)
+      }
     }
+    
+    loadFinanceData()
   }, [])
 
   useEffect(() => {
     if (!isLoading) {
-      try {
-        saveTransactions(transactions)
-        setError(null)
-      } catch (err) {
-        console.error("[useFinance] Error saving transactions:", err)
-        setError("Failed to save transactions")
+      const saveTransactionsData = async () => {
+        try {
+          await saveTransactions(transactions)
+          setError(null)
+        } catch (err) {
+          console.error("[useFinance] Error saving transactions:", err)
+          setError("Failed to save transactions")
+        }
       }
+      
+      saveTransactionsData()
     }
   }, [transactions, isLoading])
 
   useEffect(() => {
     if (!isLoading) {
-      try {
-        saveFinancialGoals(goals)
-        setError(null)
-      } catch (err) {
-        console.error("[useFinance] Error saving goals:", err)
-        setError("Failed to save goals")
+      const saveGoalsData = async () => {
+        try {
+          await saveFinancialGoals(goals)
+          setError(null)
+        } catch (err) {
+          console.error("[useFinance] Error saving goals:", err)
+          setError("Failed to save goals")
+        }
       }
+      
+      saveGoalsData()
     }
   }, [goals, isLoading])
 
   useEffect(() => {
     if (!isLoading) {
-      try {
-        saveInvestments(investments)
-        setError(null)
-      } catch (err) {
-        console.error("[useFinance] Error saving investments:", err)
-        setError("Failed to save investments")
+      const saveInvestmentsData = async () => {
+        try {
+          await saveInvestments(investments)
+          setError(null)
+        } catch (err) {
+          console.error("[useFinance] Error saving investments:", err)
+          setError("Failed to save investments")
+        }
       }
+      
+      saveInvestmentsData()
     }
   }, [investments, isLoading])
 

@@ -16,27 +16,35 @@ export function useHabits() {
       return
     }
     
-    try {
-      const savedHabits = loadHabits()
-      setHabits(savedHabits)
-      setError(null)
-    } catch (err) {
-      console.error("[useHabits] Error loading habits:", err)
-      setError("Failed to load habits")
-    } finally {
-      setIsLoading(false)
+    const loadHabitsData = async () => {
+      try {
+        const savedHabits = await loadHabits()
+        setHabits(savedHabits)
+        setError(null)
+      } catch (err) {
+        console.error("[useHabits] Error loading habits:", err)
+        setError("Failed to load habits")
+      } finally {
+        setIsLoading(false)
+      }
     }
+    
+    loadHabitsData()
   }, [])
 
   useEffect(() => {
     if (!isLoading) {
-      try {
-        saveHabits(habits)
-        setError(null)
-      } catch (err) {
-        console.error("[useHabits] Error saving habits:", err)
-        setError("Failed to save habits")
+      const saveHabitsData = async () => {
+        try {
+          await saveHabits(habits)
+          setError(null)
+        } catch (err) {
+          console.error("[useHabits] Error saving habits:", err)
+          setError("Failed to save habits")
+        }
       }
+      
+      saveHabitsData()
     }
   }, [habits, isLoading])
 
