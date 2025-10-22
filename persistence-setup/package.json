@@ -1,0 +1,19 @@
+{
+  "name": "solo-life-persistence-setup",
+  "version": "1.0.0",
+  "description": "Configuração automática da persistência cross-device",
+  "scripts": {
+    "setup": "node setup.js",
+    "test-persistence": "node test-persistence.js",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "vercel": "^32.0.0"
+  },
+  "instructions": {
+    "step1": "Execute: npm run setup",
+    "step2": "Siga as instruções na tela",
+    "step3": "Execute: npm run deploy",
+    "step4": "Teste em diferentes dispositivos"
+  }
+}
