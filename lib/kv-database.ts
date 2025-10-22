@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { FallbackStorage } from './fallback-storage'
+import { FileDatabase } from './file-database'
 
 // Database interface for Vercel KV
 interface KVDatabaseConfig {
@@ -13,10 +14,12 @@ export class KVDatabase {
   private isInitialized = false
   private isKVAvailable = false
   private fallbackStorage: FallbackStorage
+  private fileDatabase: FileDatabase
 
   constructor(config: KVDatabaseConfig) {
     this.config = config
     this.fallbackStorage = new FallbackStorage(config.prefix)
+    this.fileDatabase = new FileDatabase()
   }
 
   // Initialize database
@@ -30,7 +33,7 @@ export class KVDatabase {
       this.isInitialized = true
       console.log('[KVDatabase] Connected to Vercel KV')
     } catch (error) {
-      console.warn('[KVDatabase] Vercel KV not available, using fallback storage:', error)
+      console.warn('[KVDatabase] Vercel KV not available, using file database:', error)
       this.isKVAvailable = false
       this.isInitialized = true
     }
@@ -46,8 +49,8 @@ export class KVDatabase {
     await this.initialize()
     
     if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
-      return await this.fallbackStorage.write(key, data)
+      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
+      return await this.fileDatabase.write(key, data)
     }
     
     try {
@@ -62,8 +65,8 @@ export class KVDatabase {
       
       console.log(`[KVDatabase] Data written to ${key}`)
     } catch (error) {
-      console.error(`[KVDatabase] Failed to write ${key}, trying fallback:`, error)
-      return await this.fallbackStorage.write(key, data)
+      console.error(`[KVDatabase] Failed to write ${key}, trying file database:`, error)
+      return await this.fileDatabase.write(key, data)
     }
   }
 
@@ -72,8 +75,8 @@ export class KVDatabase {
     await this.initialize()
     
     if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
-      return await this.fallbackStorage.read(key, defaultValue)
+      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
+      return await this.fileDatabase.read(key, defaultValue)
     }
     
     try {
@@ -89,8 +92,8 @@ export class KVDatabase {
       console.log(`[KVDatabase] Data read from ${key}`)
       return parsedData
     } catch (error) {
-      console.error(`[KVDatabase] Failed to read ${key}, trying fallback:`, error)
-      return await this.fallbackStorage.read(key, defaultValue)
+      console.error(`[KVDatabase] Failed to read ${key}, trying file database:`, error)
+      return await this.fileDatabase.read(key, defaultValue)
     }
   }
 
@@ -99,8 +102,8 @@ export class KVDatabase {
     await this.initialize()
     
     if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
-      return await this.fallbackStorage.delete(key)
+      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
+      return await this.fileDatabase.delete(key)
     }
     
     try {
@@ -108,8 +111,8 @@ export class KVDatabase {
       await kv.del(kvKey)
       console.log(`[KVDatabase] Key ${key} deleted`)
     } catch (error) {
-      console.error(`[KVDatabase] Failed to delete ${key}, trying fallback:`, error)
-      return await this.fallbackStorage.delete(key)
+      console.error(`[KVDatabase] Failed to delete ${key}, trying file database:`, error)
+      return await this.fileDatabase.delete(key)
     }
   }
 
@@ -118,8 +121,8 @@ export class KVDatabase {
     await this.initialize()
     
     if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
-      return await this.fallbackStorage.exists(key)
+      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
+      return await this.fileDatabase.exists(key)
     }
     
     try {
@@ -127,8 +130,8 @@ export class KVDatabase {
       const result = await kv.exists(kvKey)
       return result === 1
     } catch (error) {
-      console.error(`[KVDatabase] Failed to check existence of ${key}, trying fallback:`, error)
-      return await this.fallbackStorage.exists(key)
+      console.error(`[KVDatabase] Failed to check existence of ${key}, trying file database:`, error)
+      return await this.fileDatabase.exists(key)
     }
   }
 
@@ -137,8 +140,8 @@ export class KVDatabase {
     await this.initialize()
     
     if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using fallback`)
-      return await this.fallbackStorage.listKeys()
+      console.log(`[KVDatabase] KV not available, using file database`)
+      return await this.fileDatabase.listKeys()
     }
     
     try {
@@ -148,8 +151,8 @@ export class KVDatabase {
       // Remove prefix from keys
       return keys.map(key => key.replace(`${this.config.prefix}:`, ''))
     } catch (error) {
-      console.error('[KVDatabase] Failed to list keys, trying fallback:', error)
-      return await this.fallbackStorage.listKeys()
+      console.error('[KVDatabase] Failed to list keys, trying file database:', error)
+      return await this.fileDatabase.listKeys()
     }
   }
 
