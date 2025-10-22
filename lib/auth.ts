@@ -89,13 +89,22 @@ export function isValidName(name: string): { valid: boolean; message?: string } 
 // Create user object
 export function createUser(credentials: RegisterCredentials, passwordHash: string): User {
   return {
-    id: crypto.randomUUID(),
+    id: generateId(),
     email: credentials.email.toLowerCase().trim(),
     name: credentials.name.trim(),
     passwordHash,
     createdAt: new Date().toISOString(),
     isActive: true
   }
+}
+
+// Generate unique ID
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback for environments without crypto.randomUUID
+  return 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36)
 }
 
 // Convert User to AuthUser

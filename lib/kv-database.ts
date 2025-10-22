@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { FallbackStorage } from './fallback-storage'
 
 // Database interface for Vercel KV
 interface KVDatabaseConfig {
@@ -10,9 +11,12 @@ interface KVDatabaseConfig {
 export class KVDatabase {
   private config: KVDatabaseConfig
   private isInitialized = false
+  private isKVAvailable = false
+  private fallbackStorage: FallbackStorage
 
   constructor(config: KVDatabaseConfig) {
     this.config = config
+    this.fallbackStorage = new FallbackStorage(config.prefix)
   }
 
   // Initialize database
@@ -22,11 +26,13 @@ export class KVDatabase {
     try {
       // Test connection
       await kv.ping()
+      this.isKVAvailable = true
       this.isInitialized = true
       console.log('[KVDatabase] Connected to Vercel KV')
     } catch (error) {
-      console.error('[KVDatabase] Failed to initialize:', error)
-      throw error
+      console.warn('[KVDatabase] Vercel KV not available, using fallback storage:', error)
+      this.isKVAvailable = false
+      this.isInitialized = true
     }
   }
 
@@ -38,6 +44,11 @@ export class KVDatabase {
   // Write data to KV store
   async write<T>(key: string, data: T): Promise<void> {
     await this.initialize()
+    
+    if (!this.isKVAvailable) {
+      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
+      return await this.fallbackStorage.write(key, data)
+    }
     
     try {
       const kvKey = this.getKey(key)
@@ -51,14 +62,19 @@ export class KVDatabase {
       
       console.log(`[KVDatabase] Data written to ${key}`)
     } catch (error) {
-      console.error(`[KVDatabase] Failed to write ${key}:`, error)
-      throw error
+      console.error(`[KVDatabase] Failed to write ${key}, trying fallback:`, error)
+      return await this.fallbackStorage.write(key, data)
     }
   }
 
   // Read data from KV store
   async read<T>(key: string, defaultValue: T): Promise<T> {
     await this.initialize()
+    
+    if (!this.isKVAvailable) {
+      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
+      return await this.fallbackStorage.read(key, defaultValue)
+    }
     
     try {
       const kvKey = this.getKey(key)
@@ -73,9 +89,8 @@ export class KVDatabase {
       console.log(`[KVDatabase] Data read from ${key}`)
       return parsedData
     } catch (error) {
-      console.error(`[KVDatabase] Failed to read ${key}:`, error)
-      console.log(`[KVDatabase] Using default value for ${key}`)
-      return defaultValue
+      console.error(`[KVDatabase] Failed to read ${key}, trying fallback:`, error)
+      return await this.fallbackStorage.read(key, defaultValue)
     }
   }
 
@@ -83,13 +98,18 @@ export class KVDatabase {
   async delete(key: string): Promise<void> {
     await this.initialize()
     
+    if (!this.isKVAvailable) {
+      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
+      return await this.fallbackStorage.delete(key)
+    }
+    
     try {
       const kvKey = this.getKey(key)
       await kv.del(kvKey)
       console.log(`[KVDatabase] Key ${key} deleted`)
     } catch (error) {
-      console.error(`[KVDatabase] Failed to delete ${key}:`, error)
-      throw error
+      console.error(`[KVDatabase] Failed to delete ${key}, trying fallback:`, error)
+      return await this.fallbackStorage.delete(key)
     }
   }
 
@@ -97,19 +117,29 @@ export class KVDatabase {
   async exists(key: string): Promise<boolean> {
     await this.initialize()
     
+    if (!this.isKVAvailable) {
+      console.log(`[KVDatabase] KV not available, using fallback for ${key}`)
+      return await this.fallbackStorage.exists(key)
+    }
+    
     try {
       const kvKey = this.getKey(key)
       const result = await kv.exists(kvKey)
       return result === 1
     } catch (error) {
-      console.error(`[KVDatabase] Failed to check existence of ${key}:`, error)
-      return false
+      console.error(`[KVDatabase] Failed to check existence of ${key}, trying fallback:`, error)
+      return await this.fallbackStorage.exists(key)
     }
   }
 
   // List all keys with prefix
   async listKeys(): Promise<string[]> {
     await this.initialize()
+    
+    if (!this.isKVAvailable) {
+      console.log(`[KVDatabase] KV not available, using fallback`)
+      return await this.fallbackStorage.listKeys()
+    }
     
     try {
       const pattern = `${this.config.prefix}:*`
@@ -118,8 +148,8 @@ export class KVDatabase {
       // Remove prefix from keys
       return keys.map(key => key.replace(`${this.config.prefix}:`, ''))
     } catch (error) {
-      console.error('[KVDatabase] Failed to list keys:', error)
-      return []
+      console.error('[KVDatabase] Failed to list keys, trying fallback:', error)
+      return await this.fallbackStorage.listKeys()
     }
   }
 
