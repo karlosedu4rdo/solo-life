@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { FallbackStorage } from './fallback-storage'
 import { FileDatabase } from './file-database'
+import { UpstashDatabase } from './upstash-database'
 
 // Database interface for Vercel KV
 interface KVDatabaseConfig {
@@ -13,21 +14,35 @@ export class KVDatabase {
   private config: KVDatabaseConfig
   private isInitialized = false
   private isKVAvailable = false
+  private isUpstashAvailable = false
   private fallbackStorage: FallbackStorage
   private fileDatabase: FileDatabase
+  private upstashDatabase: UpstashDatabase
 
   constructor(config: KVDatabaseConfig) {
     this.config = config
     this.fallbackStorage = new FallbackStorage(config.prefix)
     this.fileDatabase = new FileDatabase()
+    this.upstashDatabase = new UpstashDatabase(config.prefix)
   }
 
   // Initialize database
   private async initialize(): Promise<void> {
     if (this.isInitialized) return
 
+    // Try Upstash Redis first (best option for cross-device sync)
     try {
-      // Test connection
+      await this.upstashDatabase['initialize']()
+      this.isUpstashAvailable = true
+      this.isInitialized = true
+      console.log('[KVDatabase] Connected to Upstash Redis')
+      return
+    } catch (error) {
+      console.warn('[KVDatabase] Upstash Redis not available:', error)
+    }
+
+    // Try Vercel KV as fallback
+    try {
       await kv.ping()
       this.isKVAvailable = true
       this.isInitialized = true
@@ -48,53 +63,66 @@ export class KVDatabase {
   async write<T>(key: string, data: T): Promise<void> {
     await this.initialize()
     
-    if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
-      return await this.fileDatabase.write(key, data)
+    if (this.isUpstashAvailable) {
+      console.log(`[KVDatabase] Using Upstash Redis for ${key}`)
+      return await this.upstashDatabase.write(key, data)
     }
     
-    try {
-      const kvKey = this.getKey(key)
-      const jsonData = JSON.stringify(data)
-      
-      if (this.config.ttl) {
-        await kv.setex(kvKey, this.config.ttl, jsonData)
-      } else {
-        await kv.set(kvKey, jsonData)
+    if (this.isKVAvailable) {
+      console.log(`[KVDatabase] Using Vercel KV for ${key}`)
+      try {
+        const kvKey = this.getKey(key)
+        const jsonData = JSON.stringify(data)
+        
+        if (this.config.ttl) {
+          await kv.setex(kvKey, this.config.ttl, jsonData)
+        } else {
+          await kv.set(kvKey, jsonData)
+        }
+        
+        console.log(`[KVDatabase] Data written to ${key}`)
+        return
+      } catch (error) {
+        console.error(`[KVDatabase] Failed to write ${key}, trying file database:`, error)
+        return await this.fileDatabase.write(key, data)
       }
-      
-      console.log(`[KVDatabase] Data written to ${key}`)
-    } catch (error) {
-      console.error(`[KVDatabase] Failed to write ${key}, trying file database:`, error)
-      return await this.fileDatabase.write(key, data)
     }
+    
+    console.log(`[KVDatabase] Using file database for ${key}`)
+    return await this.fileDatabase.write(key, data)
   }
 
   // Read data from KV store
   async read<T>(key: string, defaultValue: T): Promise<T> {
     await this.initialize()
     
-    if (!this.isKVAvailable) {
-      console.log(`[KVDatabase] KV not available, using file database for ${key}`)
-      return await this.fileDatabase.read(key, defaultValue)
+    if (this.isUpstashAvailable) {
+      console.log(`[KVDatabase] Using Upstash Redis for ${key}`)
+      return await this.upstashDatabase.read(key, defaultValue)
     }
     
-    try {
-      const kvKey = this.getKey(key)
-      const data = await kv.get(kvKey)
-      
-      if (data === null) {
-        console.log(`[KVDatabase] Key ${key} not found, using default value`)
-        return defaultValue
-      }
+    if (this.isKVAvailable) {
+      console.log(`[KVDatabase] Using Vercel KV for ${key}`)
+      try {
+        const kvKey = this.getKey(key)
+        const data = await kv.get(kvKey)
+        
+        if (data === null) {
+          console.log(`[KVDatabase] Key ${key} not found, using default value`)
+          return defaultValue
+        }
 
-      const parsedData = JSON.parse(data as string) as T
-      console.log(`[KVDatabase] Data read from ${key}`)
-      return parsedData
-    } catch (error) {
-      console.error(`[KVDatabase] Failed to read ${key}, trying file database:`, error)
-      return await this.fileDatabase.read(key, defaultValue)
+        const parsedData = JSON.parse(data as string) as T
+        console.log(`[KVDatabase] Data read from ${key}`)
+        return parsedData
+      } catch (error) {
+        console.error(`[KVDatabase] Failed to read ${key}, trying file database:`, error)
+        return await this.fileDatabase.read(key, defaultValue)
+      }
     }
+    
+    console.log(`[KVDatabase] Using file database for ${key}`)
+    return await this.fileDatabase.read(key, defaultValue)
   }
 
   // Delete data from KV store
