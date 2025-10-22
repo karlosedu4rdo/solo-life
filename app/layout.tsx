@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
+import { AuthProvider } from "@/lib/auth-context"
 
 export const metadata: Metadata = {
   title: "Solo Life - Sistema de Gerenciamento Pessoal",
@@ -61,11 +62,13 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#3b82f6" />
         <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <Suspense fallback={<div>Loading...</div>}>
-          {children}
-          <Analytics />
-        </Suspense>
+             <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
+               <AuthProvider>
+                 <Suspense fallback={<div>Loading...</div>}>
+                   {children}
+                   <Analytics />
+                 </Suspense>
+               </AuthProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react"
 import type { Transaction, FinancialGoal, Investment, AnnualProjection } from "@/lib/types"
-import { saveTransactions, loadTransactions, saveFinancialGoals, loadFinancialGoals, saveInvestments, loadInvestments } from "@/lib/storage"
+import { useAuth } from "@/lib/auth-context"
+import { UserOperations } from "@/lib/kv-database"
 
 export function useFinance() {
+  const { user } = useAuth()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [goals, setGoals] = useState<FinancialGoal[]>([])
   const [investments, setInvestments] = useState<Investment[]>([])
@@ -12,11 +14,17 @@ export function useFinance() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // Only run on client side and when user is available
+    if (typeof window === 'undefined' || !user) {
+      setIsLoading(false)
+      return
+    }
+    
     const loadFinanceData = async () => {
       try {
-        const savedTransactions = await loadTransactions()
-        const savedGoals = await loadFinancialGoals()
-        const savedInvestments = await loadInvestments()
+        const savedTransactions = await UserOperations.loadUserTransactions(user.id)
+        const savedGoals = await UserOperations.loadUserFinancialGoals(user.id)
+        const savedInvestments = await UserOperations.loadUserInvestments(user.id)
         setTransactions(savedTransactions)
         setGoals(savedGoals)
         setInvestments(savedInvestments)
@@ -30,13 +38,13 @@ export function useFinance() {
     }
     
     loadFinanceData()
-  }, [])
+  }, [user])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && user) {
       const saveTransactionsData = async () => {
         try {
-          await saveTransactions(transactions)
+          await UserOperations.saveUserTransactions(user.id, transactions)
           setError(null)
         } catch (err) {
           console.error("[useFinance] Error saving transactions:", err)
@@ -46,13 +54,13 @@ export function useFinance() {
       
       saveTransactionsData()
     }
-  }, [transactions, isLoading])
+  }, [transactions, isLoading, user])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && user) {
       const saveGoalsData = async () => {
         try {
-          await saveFinancialGoals(goals)
+          await UserOperations.saveUserFinancialGoals(user.id, goals)
           setError(null)
         } catch (err) {
           console.error("[useFinance] Error saving goals:", err)
@@ -62,13 +70,13 @@ export function useFinance() {
       
       saveGoalsData()
     }
-  }, [goals, isLoading])
+  }, [goals, isLoading, user])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && user) {
       const saveInvestmentsData = async () => {
         try {
-          await saveInvestments(investments)
+          await UserOperations.saveUserInvestments(user.id, investments)
           setError(null)
         } catch (err) {
           console.error("[useFinance] Error saving investments:", err)
@@ -78,7 +86,7 @@ export function useFinance() {
       
       saveInvestmentsData()
     }
-  }, [investments, isLoading])
+  }, [investments, isLoading, user])
 
   const addTransaction = useCallback((transaction: Omit<Transaction, "id" | "createdAt">) => {
     try {

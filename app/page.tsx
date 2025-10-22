@@ -1,5 +1,6 @@
 "use client"
 
+import { ProtectedRoute } from "@/components/auth/protected-route"
 import { useEffect, useState } from "react"
 import { usePlayer } from "@/hooks/use-player"
 import { useHabits } from "@/hooks/use-habits"
@@ -18,7 +19,15 @@ import { Brain, Heart, Zap, Coins, Bell, AlertCircle, User } from "lucide-react"
 import type { DailyMission } from "@/lib/types"
 import { getCurrentLevelProgress } from "@/lib/game-logic"
 
-export default function DashboardPage() {
+export default function HomePage() {
+  return (
+    <ProtectedRoute>
+      <DashboardPage />
+    </ProtectedRoute>
+  )
+}
+
+function DashboardPage() {
   const { player, isLoading, initializePlayer, gainXP, modifyStat } = usePlayer()
   const { habits, completeHabit: completeHabitInStorage } = useHabits()
   const [dailyMissions, setDailyMissions] = useState<DailyMission[]>([])

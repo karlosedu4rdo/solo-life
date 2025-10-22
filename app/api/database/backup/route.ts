@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DatabaseOperations } from '@/lib/database'
+import { KVOperations } from '@/lib/kv-database'
 
 // POST /api/database/backup - Create a backup
 export async function POST(request: NextRequest) {
   try {
-    const backupFilename = await DatabaseOperations.createBackup()
+    const backupFilename = await KVOperations.createBackup()
     return NextResponse.json({ 
       success: true, 
       backupFilename,
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest) {
       )
     }
     
-    await DatabaseOperations.restoreFromBackup(backupFilename)
+    await KVOperations.restoreFromBackup(backupFilename)
     return NextResponse.json({ 
       success: true,
       message: 'Data restored successfully' 

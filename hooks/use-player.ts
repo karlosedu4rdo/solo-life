@@ -2,25 +2,27 @@
 
 import { useState, useEffect, useCallback } from "react"
 import type { Player } from "@/lib/types"
-import { savePlayer, loadPlayer } from "@/lib/storage"
 import { createNewPlayer, addXP, updateStats } from "@/lib/game-logic"
 import type { PlayerStats } from "@/lib/types"
+import { useAuth } from "@/lib/auth-context"
+import { UserOperations } from "@/lib/kv-database"
 
 export function usePlayer() {
+  const { user } = useAuth()
   const [player, setPlayer] = useState<Player | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
+    // Only run on client side and when user is available
+    if (typeof window === 'undefined' || !user) {
       setIsLoading(false)
       return
     }
     
     const loadPlayerData = async () => {
       try {
-        const savedPlayer = await loadPlayer()
+        const savedPlayer = await UserOperations.loadUserPlayer(user.id)
         if (savedPlayer) {
           setPlayer(savedPlayer)
         }
@@ -34,13 +36,13 @@ export function usePlayer() {
     }
     
     loadPlayerData()
-  }, [])
+  }, [user])
 
   useEffect(() => {
-    if (player) {
+    if (player && user) {
       const savePlayerData = async () => {
         try {
-          await savePlayer(player)
+          await UserOperations.saveUserPlayer(user.id, player)
           setError(null)
         } catch (err) {
           console.error("[usePlayer] Error saving player:", err)
@@ -50,7 +52,7 @@ export function usePlayer() {
       
       savePlayerData()
     }
-  }, [player])
+  }, [player, user])
 
   const initializePlayer = useCallback((name: string) => {
     try {

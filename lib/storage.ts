@@ -1,5 +1,5 @@
 import type { Player, Habit, Transaction, FinancialGoal, Achievement, Notification, CultureItem, Vice, WorkoutSession, WorkoutLog, Investment } from "./types"
-import { DatabaseOperations } from "./database"
+import { KVOperations } from "./kv-database"
 
 // Client-side storage fallback for development
 const STORAGE_KEYS = {
@@ -36,7 +36,7 @@ function safeStorageOperation<T>(
 // Player storage
 export async function savePlayer(player: Player): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.savePlayer(player)
+    await KVOperations.savePlayer(player)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.PLAYER, JSON.stringify(player)),
@@ -48,7 +48,7 @@ export async function savePlayer(player: Player): Promise<void> {
 
 export async function loadPlayer(): Promise<Player | null> {
   if (isServer) {
-    return await DatabaseOperations.loadPlayer()
+    return await KVOperations.loadPlayer()
   } else {
     return safeStorageOperation(
       () => {
@@ -64,7 +64,7 @@ export async function loadPlayer(): Promise<Player | null> {
 // Habits storage
 export async function saveHabits(habits: Habit[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveHabits(habits)
+    await KVOperations.saveHabits(habits)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.HABITS, JSON.stringify(habits)),
@@ -76,7 +76,7 @@ export async function saveHabits(habits: Habit[]): Promise<void> {
 
 export async function loadHabits(): Promise<Habit[]> {
   if (isServer) {
-    return await DatabaseOperations.loadHabits()
+    return await KVOperations.loadHabits()
   } else {
     return safeStorageOperation(
       () => {
@@ -92,7 +92,7 @@ export async function loadHabits(): Promise<Habit[]> {
 // Transaction storage
 export async function saveTransactions(transactions: Transaction[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveTransactions(transactions)
+    await KVOperations.saveTransactions(transactions)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions)),
@@ -104,7 +104,7 @@ export async function saveTransactions(transactions: Transaction[]): Promise<voi
 
 export async function loadTransactions(): Promise<Transaction[]> {
   if (isServer) {
-    return await DatabaseOperations.loadTransactions()
+    return await KVOperations.loadTransactions()
   } else {
     return safeStorageOperation(
       () => {
@@ -120,7 +120,7 @@ export async function loadTransactions(): Promise<Transaction[]> {
 // Financial goals storage
 export async function saveFinancialGoals(goals: FinancialGoal[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveFinancialGoals(goals)
+    await KVOperations.saveFinancialGoals(goals)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.FINANCIAL_GOALS, JSON.stringify(goals)),
@@ -132,7 +132,7 @@ export async function saveFinancialGoals(goals: FinancialGoal[]): Promise<void> 
 
 export async function loadFinancialGoals(): Promise<FinancialGoal[]> {
   if (isServer) {
-    return await DatabaseOperations.loadFinancialGoals()
+    return await KVOperations.loadFinancialGoals()
   } else {
     return safeStorageOperation(
       () => {
@@ -148,7 +148,7 @@ export async function loadFinancialGoals(): Promise<FinancialGoal[]> {
 // Investment storage
 export async function saveInvestments(investments: Investment[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveInvestments(investments)
+    await KVOperations.saveInvestments(investments)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.INVESTMENTS, JSON.stringify(investments)),
@@ -160,7 +160,7 @@ export async function saveInvestments(investments: Investment[]): Promise<void> 
 
 export async function loadInvestments(): Promise<Investment[]> {
   if (isServer) {
-    return await DatabaseOperations.loadInvestments()
+    return await KVOperations.loadInvestments()
   } else {
     return safeStorageOperation(
       () => {
@@ -176,7 +176,7 @@ export async function loadInvestments(): Promise<Investment[]> {
 // Achievements storage
 export async function saveAchievements(achievements: Achievement[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveAchievements(achievements)
+    await KVOperations.saveAchievements(achievements)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.ACHIEVEMENTS, JSON.stringify(achievements)),
@@ -188,7 +188,7 @@ export async function saveAchievements(achievements: Achievement[]): Promise<voi
 
 export async function loadAchievements(): Promise<Achievement[]> {
   if (isServer) {
-    return await DatabaseOperations.loadAchievements()
+    return await KVOperations.loadAchievements()
   } else {
     return safeStorageOperation(
       () => {
@@ -204,7 +204,7 @@ export async function loadAchievements(): Promise<Achievement[]> {
 // Notifications storage
 export async function saveNotifications(notifications: Notification[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveNotifications(notifications)
+    await KVOperations.saveNotifications(notifications)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications)),
@@ -216,7 +216,7 @@ export async function saveNotifications(notifications: Notification[]): Promise<
 
 export async function loadNotifications(): Promise<Notification[]> {
   if (isServer) {
-    return await DatabaseOperations.loadNotifications()
+    return await KVOperations.loadNotifications()
   } else {
     return safeStorageOperation(
       () => {
@@ -232,7 +232,7 @@ export async function loadNotifications(): Promise<Notification[]> {
 // Culture items storage
 export async function saveCultureItems(items: CultureItem[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveCultureItems(items)
+    await KVOperations.saveCultureItems(items)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.CULTURE_ITEMS, JSON.stringify(items)),
@@ -244,7 +244,7 @@ export async function saveCultureItems(items: CultureItem[]): Promise<void> {
 
 export async function loadCultureItems(): Promise<CultureItem[]> {
   if (isServer) {
-    return await DatabaseOperations.loadCultureItems()
+    return await KVOperations.loadCultureItems()
   } else {
     return safeStorageOperation(
       () => {
@@ -260,7 +260,7 @@ export async function loadCultureItems(): Promise<CultureItem[]> {
 // Vices storage
 export async function saveVices(vices: Vice[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveVices(vices)
+    await KVOperations.saveVices(vices)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.VICES, JSON.stringify(vices)),
@@ -272,7 +272,7 @@ export async function saveVices(vices: Vice[]): Promise<void> {
 
 export async function loadVices(): Promise<Vice[]> {
   if (isServer) {
-    return await DatabaseOperations.loadVices()
+    return await KVOperations.loadVices()
   } else {
     return safeStorageOperation(
       () => {
@@ -288,7 +288,7 @@ export async function loadVices(): Promise<Vice[]> {
 // Workout sessions storage
 export async function saveWorkoutSessions(sessions: WorkoutSession[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveWorkoutSessions(sessions)
+    await KVOperations.saveWorkoutSessions(sessions)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.WORKOUT_SESSIONS, JSON.stringify(sessions)),
@@ -300,7 +300,7 @@ export async function saveWorkoutSessions(sessions: WorkoutSession[]): Promise<v
 
 export async function loadWorkoutSessions(): Promise<WorkoutSession[]> {
   if (isServer) {
-    return await DatabaseOperations.loadWorkoutSessions()
+    return await KVOperations.loadWorkoutSessions()
   } else {
     return safeStorageOperation(
       () => {
@@ -316,7 +316,7 @@ export async function loadWorkoutSessions(): Promise<WorkoutSession[]> {
 // Workout logs storage
 export async function saveWorkoutLogs(logs: WorkoutLog[]): Promise<void> {
   if (isServer) {
-    await DatabaseOperations.saveWorkoutLogs(logs)
+    await KVOperations.saveWorkoutLogs(logs)
   } else {
     safeStorageOperation(
       () => localStorage.setItem(STORAGE_KEYS.WORKOUT_LOGS, JSON.stringify(logs)),
@@ -328,7 +328,7 @@ export async function saveWorkoutLogs(logs: WorkoutLog[]): Promise<void> {
 
 export async function loadWorkoutLogs(): Promise<WorkoutLog[]> {
   if (isServer) {
-    return await DatabaseOperations.loadWorkoutLogs()
+    return await KVOperations.loadWorkoutLogs()
   } else {
     return safeStorageOperation(
       () => {
@@ -344,7 +344,7 @@ export async function loadWorkoutLogs(): Promise<WorkoutLog[]> {
 // Backup operations
 export async function createBackup(): Promise<string> {
   if (isServer) {
-    return await DatabaseOperations.createBackup()
+    return await KVOperations.createBackup()
   } else {
     // Client-side backup (export all data as JSON)
     const backupData = {

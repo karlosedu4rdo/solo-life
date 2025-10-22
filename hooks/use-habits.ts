@@ -2,23 +2,25 @@
 
 import { useState, useEffect, useCallback } from "react"
 import type { Habit, DailyMission } from "@/lib/types"
-import { saveHabits, loadHabits } from "@/lib/storage"
+import { useAuth } from "@/lib/auth-context"
+import { UserOperations } from "@/lib/kv-database"
 
 export function useHabits() {
+  const { user } = useAuth()
   const [habits, setHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
+    // Only run on client side and when user is available
+    if (typeof window === 'undefined' || !user) {
       setIsLoading(false)
       return
     }
     
     const loadHabitsData = async () => {
       try {
-        const savedHabits = await loadHabits()
+        const savedHabits = await UserOperations.loadUserHabits(user.id)
         setHabits(savedHabits)
         setError(null)
       } catch (err) {
@@ -30,13 +32,13 @@ export function useHabits() {
     }
     
     loadHabitsData()
-  }, [])
+  }, [user])
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && habits.length >= 0 && user) {
       const saveHabitsData = async () => {
         try {
-          await saveHabits(habits)
+          await UserOperations.saveUserHabits(user.id, habits)
           setError(null)
         } catch (err) {
           console.error("[useHabits] Error saving habits:", err)
@@ -46,7 +48,7 @@ export function useHabits() {
       
       saveHabitsData()
     }
-  }, [habits, isLoading])
+  }, [habits, isLoading, user])
 
   const addHabit = useCallback((habit: Omit<Habit, "id" | "createdAt" | "streak" | "completionHistory">) => {
     try {

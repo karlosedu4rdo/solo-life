@@ -1,5 +1,51 @@
 // Core types for Solo Life app
 
+// User and Authentication types
+export interface User {
+  id: string
+  email: string
+  name: string
+  passwordHash: string
+  avatar?: string
+  createdAt: string
+  lastLoginAt?: string
+  isActive: boolean
+}
+
+export interface AuthUser {
+  id: string
+  email: string
+  name: string
+  avatar?: string
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface RegisterCredentials {
+  name: string
+  email: string
+  password: string
+}
+
+export interface AuthResponse {
+  success: boolean
+  user?: AuthUser
+  token?: string
+  message?: string
+}
+
+export interface AuthContextType {
+  user: AuthUser | null
+  isLoading: boolean
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>
+  register: (credentials: RegisterCredentials) => Promise<AuthResponse>
+  logout: () => void
+  updateProfile: (updates: Partial<AuthUser>) => Promise<boolean>
+}
+
 export interface PlayerStats {
   willpower: number // Poder de Vontade - consistency in daily habits
   intelligence: number // Inteligência - reading and learning progress

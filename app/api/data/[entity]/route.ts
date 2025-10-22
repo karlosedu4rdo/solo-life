@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { DatabaseOperations } from '@/lib/database'
+import { KVOperations } from '@/lib/kv-database'
 
 // GET /api/data/[entity] - Load data for a specific entity
 export async function GET(
@@ -13,37 +13,37 @@ export async function GET(
     
     switch (entity) {
       case 'player':
-        data = await DatabaseOperations.loadPlayer()
+        data = await KVOperations.loadPlayer()
         break
       case 'habits':
-        data = await DatabaseOperations.loadHabits()
+        data = await KVOperations.loadHabits()
         break
       case 'transactions':
-        data = await DatabaseOperations.loadTransactions()
+        data = await KVOperations.loadTransactions()
         break
       case 'financial-goals':
-        data = await DatabaseOperations.loadFinancialGoals()
+        data = await KVOperations.loadFinancialGoals()
         break
       case 'investments':
-        data = await DatabaseOperations.loadInvestments()
+        data = await KVOperations.loadInvestments()
         break
       case 'achievements':
-        data = await DatabaseOperations.loadAchievements()
+        data = await KVOperations.loadAchievements()
         break
       case 'notifications':
-        data = await DatabaseOperations.loadNotifications()
+        data = await KVOperations.loadNotifications()
         break
       case 'culture-items':
-        data = await DatabaseOperations.loadCultureItems()
+        data = await KVOperations.loadCultureItems()
         break
       case 'vices':
-        data = await DatabaseOperations.loadVices()
+        data = await KVOperations.loadVices()
         break
       case 'workout-sessions':
-        data = await DatabaseOperations.loadWorkoutSessions()
+        data = await KVOperations.loadWorkoutSessions()
         break
       case 'workout-logs':
-        data = await DatabaseOperations.loadWorkoutLogs()
+        data = await KVOperations.loadWorkoutLogs()
         break
       default:
         return NextResponse.json(
@@ -73,37 +73,37 @@ export async function POST(
     
     switch (entity) {
       case 'player':
-        await DatabaseOperations.savePlayer(body)
+        await KVOperations.savePlayer(body)
         break
       case 'habits':
-        await DatabaseOperations.saveHabits(body)
+        await KVOperations.saveHabits(body)
         break
       case 'transactions':
-        await DatabaseOperations.saveTransactions(body)
+        await KVOperations.saveTransactions(body)
         break
       case 'financial-goals':
-        await DatabaseOperations.saveFinancialGoals(body)
+        await KVOperations.saveFinancialGoals(body)
         break
       case 'investments':
-        await DatabaseOperations.saveInvestments(body)
+        await KVOperations.saveInvestments(body)
         break
       case 'achievements':
-        await DatabaseOperations.saveAchievements(body)
+        await KVOperations.saveAchievements(body)
         break
       case 'notifications':
-        await DatabaseOperations.saveNotifications(body)
+        await KVOperations.saveNotifications(body)
         break
       case 'culture-items':
-        await DatabaseOperations.saveCultureItems(body)
+        await KVOperations.saveCultureItems(body)
         break
       case 'vices':
-        await DatabaseOperations.saveVices(body)
+        await KVOperations.saveVices(body)
         break
       case 'workout-sessions':
-        await DatabaseOperations.saveWorkoutSessions(body)
+        await KVOperations.saveWorkoutSessions(body)
         break
       case 'workout-logs':
-        await DatabaseOperations.saveWorkoutLogs(body)
+        await KVOperations.saveWorkoutLogs(body)
         break
       default:
         return NextResponse.json(
