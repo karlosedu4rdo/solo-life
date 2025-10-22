@@ -19,6 +19,9 @@ class FallbackStorage {
     try {
       const storageKey = this.getKey(key)
       const jsonData = JSON.stringify(data)
+      console.log(`[FallbackStorage] Writing to key: ${storageKey}`)
+      console.log(`[FallbackStorage] Data to write:`, typeof data)
+      
       localStorage.setItem(storageKey, jsonData)
       console.log(`[FallbackStorage] Data written to ${key}`)
     } catch (error) {
@@ -35,7 +38,10 @@ class FallbackStorage {
 
     try {
       const storageKey = this.getKey(key)
+      console.log(`[FallbackStorage] Reading key: ${storageKey}`)
+      
       const data = localStorage.getItem(storageKey)
+      console.log(`[FallbackStorage] Raw data from localStorage:`, data ? 'exists' : 'null')
       
       if (data === null) {
         console.log(`[FallbackStorage] Key ${key} not found, using default value`)
@@ -43,7 +49,7 @@ class FallbackStorage {
       }
 
       const parsedData = JSON.parse(data) as T
-      console.log(`[FallbackStorage] Data read from ${key}`)
+      console.log(`[FallbackStorage] Data read from ${key}:`, typeof parsedData)
       return parsedData
     } catch (error) {
       console.error(`[FallbackStorage] Failed to read ${key}:`, error)

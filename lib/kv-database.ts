@@ -308,12 +308,23 @@ export class UserOperations {
   }
 
   static async findUserByEmail(email: string): Promise<any | null> {
+    console.log('[UserOperations] Finding user by email:', email)
+    
     const userKey = `user:email:${email.toLowerCase()}`
+    console.log('[UserOperations] Looking for user key:', userKey)
+    
     const userId = await kvDb.read(userKey, null)
+    console.log('[UserOperations] Found userId:', userId)
     
-    if (!userId) return null
+    if (!userId) {
+      console.log('[UserOperations] No userId found for email:', email)
+      return null
+    }
     
-    return await kvDb.read(`user:${userId}`, null)
+    const user = await kvDb.read(`user:${userId}`, null)
+    console.log('[UserOperations] Found user:', user ? { id: user.id, email: user.email, name: user.name } : null)
+    
+    return user
   }
 
   static async saveUserEmailIndex(email: string, userId: string): Promise<void> {
